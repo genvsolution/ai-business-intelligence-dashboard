@@ -1,0 +1,340 @@
+{% extends "base.html" %}
+
+{% block title %}SalesPulse - Dashboard{% endblock %}
+
+{% block head %}
+    <!-- No page-specific CSS needed for this basic dashboard, Bootstrap provides styling. -->
+    <!-- Chart.js is assumed to be loaded either in base.html or globally for efficiency. -->
+    <!-- If not, uncomment the line below in the scripts block. -->
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Page Header and Actions -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="display-5 fw-bold text-primary">SalesPulse Dashboard</h1>
+        <div class="dropdown">
+            <button class="btn btn-primary dropdown-toggle" type="button" id="dashboardActions" data-bs-toggle="dropdown" aria-expanded="false">
+                Quick Actions
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="dashboardActions">
+                <li><a class="dropdown-item" href="{{ url_for('leads.create_lead') }}">Add New Lead</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('leads.list_leads') }}">View All Leads</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('reports.generate_report') }}">Generate Report</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="#" onclick="location.reload();">Refresh Data</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Welcome Message -->
+    <p class="lead mb-4">
+        Welcome back, {% if current_user.is_authenticated %}<strong>{{ current_user.username }}</strong>{% else %}Guest{% endif %}!
+        Here's a quick overview of your sales performance and key metrics.
+    </p>
+
+    <!-- KPI Cards Section -->
+    <div class="row mb-5">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card text-white bg-primary h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="card-title text-uppercase fw-bold mb-0">Total Revenue</h5>
+                            <p class="card-text display-4 mt-2 mb-0">$1,234,567</p>
+                        </div>
+                        <i class="bi bi-currency-dollar fa-3x"></i>
+                    </div>
+                    <p class="card-text mt-2"><small>+12% from last month</small></p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card text-white bg-success h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="card-title text-uppercase fw-bold mb-0">Sales Volume</h5>
+                            <p class="card-text display-4 mt-2 mb-0">5,432 Units</p>
+                        </div>
+                        <i class="bi bi-graph-up fa-3x"></i>
+                    </div>
+                    <p class="card-text mt-2"><small>+8% from last month</small></p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card text-white bg-info h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="card-title text-uppercase fw-bold mb-0">Conversion Rate</h5>
+                            <p class="card-text display-4 mt-2 mb-0">15.3%</p>
+                        </div>
+                        <i class="bi bi-arrow-repeat fa-3x"></i>
+                    </div>
+                    <p class="card-text mt-2"><small>-0.5% from last month</small></p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card text-white bg-warning h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="card-title text-uppercase fw-bold mb-0">Avg. Deal Size</h5>
+                            <p class="card-text display-4 mt-2 mb-0">$2,273</p>
+                        </div>
+                        <i class="bi bi-cash-stack fa-3x"></i>
+                    </div>
+                    <p class="card-text mt-2"><small>+4% from last month</small></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="row mb-5">
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm h-100 border-0">
+                <div class="card-header bg-white fw-bold text-primary">Monthly Sales Trend</div>
+                <div class="card-body">
+                    <div class="chart-container" style="position: relative; height:300px; width:100%">
+                        <canvas id="monthlySalesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm h-100 border-0">
+                <div class="card-header bg-white fw-bold text-primary">Lead Status Distribution</div>
+                <div class="card-body">
+                    <div class="chart-container" style="position: relative; height:300px; width:100%">
+                        <canvas id="leadStatusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activities & AI Insights Section -->
+    <div class="row mb-4">
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm h-100 border-0">
+                <div class="card-header bg-white fw-bold text-primary">Recent Activities</div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="mb-1"><strong>John Doe</strong> updated lead "Acme Corp" status.</h6>
+                                <small class="text-muted">Status changed to "Proposal Sent".</small>
+                            </div>
+                            <span class="badge bg-secondary rounded-pill">5 mins ago</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="mb-1"><strong>Jane Smith</strong> added new lead "Global Innovations".</h6>
+                                <small class="text-muted">Source: Website Inquiry.</small>
+                            </div>
+                            <span class="badge bg-secondary rounded-pill">1 hour ago</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="mb-1"><strong>Admin</strong> assigned task to <strong>John Doe</strong>.</h6>
+                                <small class="text-muted">Task: "Follow up with Beta Ltd". Due: Tomorrow.</small>
+                            </div>
+                            <span class="badge bg-secondary rounded-pill">3 hours ago</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="mb-1">New AI Insight Generated.</h6>
+                                <small class="text-muted">"Product X sales increased by 20% in Q3, consider targeted campaign."</small>
+                            </div>
+                            <span class="badge bg-secondary rounded-pill">Yesterday</span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-footer bg-light text-end">
+                    <a href="{{ url_for('activity.view_all') }}" class="btn btn-sm btn-outline-primary">View All Activities</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm h-100 border-0">
+                <div class="card-header bg-white fw-bold text-primary">AI Insights & Recommendations</div>
+                <div class="card-body">
+                    <div class="alert alert-success d-flex align-items-center" role="alert">
+                        <i class="bi bi-lightbulb-fill me-2"></i>
+                        <div>
+                            <strong>Insight:</strong> Your conversion rate for leads from "Social Media" source is 25% higher than average.
+                            <br><small><em>Recommendation: Increase marketing spend on social media platforms.</em></small>
+                        </div>
+                    </div>
+                    <div class="alert alert-info d-flex align-items-center" role="alert">
+                        <i class="bi bi-bar-chart-fill me-2"></i>
+                        <div>
+                            <strong>Trend Alert:</strong> Sales of "Premium Package" are projected to increase by 15% next quarter.
+                            <br><small><em>Recommendation: Ensure sufficient inventory and allocate more sales resources.</em></small>
+                        </div>
+                    </div>
+                    <div class="alert alert-warning d-flex align-items-center" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <div>
+                            <strong>Anomaly Detected:</strong> A significant drop in lead engagement observed for "EMEA" region this week.
+                            <br><small><em>Recommendation: Investigate regional sales team activities and market conditions.</em></small>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-light text-end">
+                    <a href="{{ url_for('ai_insights.view_all') }}" class="btn btn-sm btn-outline-primary">View All Insights</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+    <!-- Chart.js CDN (if not already included in base.html) -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script> -->
+    <!-- Assuming Chart.js is loaded in base.html or globally for all pages -->
+    <script>
+        /**
+         * Initializes Chart.js charts on the dashboard.
+         * This script runs once the DOM is fully loaded.
+         */
+        document.addEventListener('DOMContentLoaded', function() {
+            // Ensure Chart.js is available
+            if (typeof Chart === 'undefined') {
+                console.error('Chart.js library not loaded. Please ensure it is included in base.html or before this script.');
+                return;
+            }
+
+            /**
+             * Renders the Monthly Sales Trend Line Chart.
+             * Displays dummy data for demonstration purposes.
+             */
+            function renderMonthlySalesChart() {
+                const monthlySalesCtx = document.getElementById('monthlySalesChart');
+                if (!monthlySalesCtx) {
+                    console.warn('Monthly sales chart canvas not found.');
+                    return;
+                }
+                new Chart(monthlySalesCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                        datasets: [{
+                            label: 'Actual Sales ($)',
+                            data: [120000, 150000, 130000, 180000, 200000, 190000, 220000, 250000, 230000, 260000, 280000, 300000],
+                            borderColor: 'rgb(75, 192, 192)',
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            tension: 0.3,
+                            fill: true,
+                            pointRadius: 5,
+                            pointHoverRadius: 8
+                        }, {
+                            label: 'Target Sales ($)',
+                            data: [100000, 120000, 140000, 160000, 180000, 200000, 220000, 240000, 260000, 280000, 300000, 320000],
+                            borderColor: 'rgb(255, 99, 132)',
+                            backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                            borderDash: [5, 5],
+                            tension: 0.3,
+                            fill: false,
+                            pointRadius: 3,
+                            pointHoverRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false, // Allows chart to fill its container
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                                labels: {
+                                    font: {
+                                        size: 14
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                mode: 'index',
+                                intersect: false,
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed.y !== null) {
+                                            label += new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(context.parsed.y);
+                                        }
+                                        return label;
+                                    }
+                                }
+                            },
+                            title: {
+                                display: false, // Title handled by card-header
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Revenue ($)',
+                                    font: {
+                                        size: 14,
+                                        weight: 'bold'
+                                    }
+                                },
+                                ticks: {
+                                    callback: function(value) {
+                                        return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value);
+                                    }
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Month',
+                                    font: {
+                                        size: 14,
+                                        weight: 'bold'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            /**
+             * Renders the Lead Status Distribution Pie Chart.
+             * Displays dummy data for demonstration purposes.
+             */
+            function renderLeadStatusChart() {
+                const leadStatusCtx = document.getElementById('leadStatusChart');
+                if (!leadStatusCtx) {
+                    console.warn('Lead status chart canvas not found.');
+                    return;
+                }
+                new Chart(leadStatusCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: ['New', 'Qualified', 'Contacted', 'Proposal Sent', 'Negotiation', 'Converted', 'Lost'],
+                        datasets: [{
+                            label: 'Number of Leads',
+                            data: [150, 100, 80, 60, 40, 30, 20],
+                            backgroundColor: [
+                                'rgba(255, 99, 132, 0.8)', // New (Red)
+                                'rgba(54, 162, 235, 0.8)', // Qualified (Blue)
+                                'rgba(255, 206, 86, 0.8)', // Contacted (Yellow)
+                                'rgba(75, 192, 192, 0.8)', // Proposal Sent (Teal)
+                                'rgba(153, 102, 255, 0.8)', // Negotiation (Purple)
+                                'rgba(40, 167, 69, 0.8)', // Converted (Bootstrap Green)
+                                'rgba(108, 117, 125, 0.8)'  // Lost (Bootstrap Gray)
+                            ],
+                            borderColor: '#fff', // White border between segments
+                            borderWidth: 

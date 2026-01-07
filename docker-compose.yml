@@ -1,0 +1,179 @@
+version: '3.8'
+
+# This docker-compose.yml defines a multi-container Docker application for development and local testing.
+# It sets up the Flask backend, PostgreSQL database, Redis cache/broker, Nginx reverse proxy,
+# and Celery workers for background tasks, simplifying setup and orchestration.
+
+services:
+  # PostgreSQL Database Service
+  # This service provides a persistent PostgreSQL database instance for the application.
+  db:
+    image: postgres:13-alpine # Using a stable and lightweight PostgreSQL image
+    container_name: sales_analytics_db
+    restart: unless-stopped # Always restart unless explicitly stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-sales_analytics_db} # Database name, default to 'sales_analytics_db'
+      POSTGRES_USER: ${POSTGRES_USER:-sales_user} # Database user, default to 'sales_user'
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-sales_password} # Database password, default to 'sales_password'
+    volumes:
+      - sales_analytics_db_data:/var/lib/postgresql/data # Persist database data to a named volume
+    ports:
+      - "5432:5432" # Expose PostgreSQL port to the host for potential direct access (e.g., via DBeaver)
+    healthcheck: # Ensure the database is ready before other services try to connect
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s # Allow 10 seconds for the service to start up initially
+
+  # Redis Cache and Celery Broker Service
+  # This service provides a Redis instance used for caching and as a message broker for Celery.
+  redis:
+    image: redis:6-alpine # Using a stable and lightweight Redis image
+    container_name: sales_analytics_redis
+    restart: unless-stopped
+    volumes:
+      - sales_analytics_redis_data:/data # Persist Redis data (optional for development, but good practice)
+    ports:
+      - "6379:6379" # Expose Redis port to the host for potential direct access
+    healthcheck: # Ensure Redis is responsive
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+  # Flask Application Service (Backend)
+  # This service builds and runs the Python Flask backend application using Gunicorn.
+  app:
+    build:
+      context: . # Build from the Dockerfile located in the current directory
+      dockerfile: Dockerfile # Specify the Dockerfile name
+    container_name: sales_analytics_app
+    restart: unless-stopped
+    # Command to run Gunicorn, binding to port 8000 and serving the 'app' instance from 'wsgi.py'
+    command: gunicorn --bind 0.0.0.0:8000 wsgi:app
+    volumes:
+      - .:/app # Mount the current host directory into the container for live code changes during development
+      - /app/static # Exclude /app/static from host mount if built inside container
+      - /app/node_modules # Exclude /app/node_modules from host mount if built inside container
+    environment:
+      FLASK_ENV: ${FLASK_ENV:-development} # Flask environment (development/production)
+      SECRET_KEY: ${SECRET_KEY:-super-secret-dev-key} # Flask secret key (CRITICAL: CHANGE FOR PRODUCTION)
+      DATABASE_URL: postgresql://${POSTGRES_USER:-sales_user}:${POSTGRES_PASSWORD:-sales_password}@db:5432/${POSTGRES_DB:-sales_analytics_db} # Database connection string
+      REDIS_URL: redis://redis:6379/0 # Redis connection string for caching
+      CELERY_BROKER_URL: redis://redis:6379/0 # Celery broker URL (uses Redis)
+      CELERY_RESULT_BACKEND: redis://redis:6379/0 # Celery result backend URL (uses Redis)
+      # Placeholder for AI/ML API keys and other external service configurations
+      # OPENAI_API_KEY: ${OPENAI_API_KEY}
+      # ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      # MAIL_SERVER: ${MAIL_SERVER}
+      # MAIL_USERNAME: ${MAIL_USERNAME}
+      # MAIL_PASSWORD: ${MAIL_PASSWORD}
+      # Add other application-specific environment variables here
+    ports:
+      - "8000:8000" # Expose Gunicorn's port (primarily for Nginx, but useful for direct access during dev)
+    depends_on: # Ensure database and Redis are healthy before starting the app
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck: # Ensure the Flask application is responsive via a health endpoint
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"] # Assumes a /health endpoint in your Flask app
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+  # Nginx Reverse Proxy Service
+  # Nginx acts as a reverse proxy, routing incoming requests to the Flask application.
+  # It can also serve static files directly for improved performance.
+  nginx:
+    image: nginx:stable-alpine # Using a stable and lightweight Nginx image
+    container_name: sales_analytics_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80" # Expose HTTP port to the host
+      - "443:443" # Expose HTTPS port to the host (requires SSL configuration in nginx.conf)
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro # Mount custom Nginx configuration
+      # Uncomment the following lines for SSL/TLS in production:
+      # - ./nginx/cert.crt:/etc/nginx/cert.crt:ro
+      # - ./nginx/cert.key:/etc/nginx/cert.key:ro
+      # If Nginx serves static files directly, mount the static files volume from the app:
+      # - ./app/static:/app/static:ro
+    depends_on: # Ensure the Flask app is healthy before Nginx starts routing traffic to it
+      app:
+        condition: service_healthy
+    healthcheck: # Ensure Nginx configuration is valid and the service is running
+      test: ["CMD-SHELL", "nginx -t"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Celery Worker Service
+  # This service runs Celery workers to process background tasks (e.g., AI insights, report generation).
+  celery_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sales_analytics_celery_worker
+    restart: unless-stopped
+    # Command to run Celery worker, replace 'app.celery_app' with the actual path to your Celery app instance
+    command: celery -A app.celery_app worker --loglevel=info
+    volumes:
+      - .:/app
+      - /app/static
+      - /app/node_modules
+    environment: # Celery worker needs access to the same environment variables as the main app
+      FLASK_ENV: ${FLASK_ENV:-development}
+      SECRET_KEY: ${SECRET_KEY:-super-secret-dev-key}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-sales_user}:${POSTGRES_PASSWORD:-sales_password}@db:5432/${POSTGRES_DB:-sales_analytics_db}
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+      # OPENAI_API_KEY: ${OPENAI_API_KEY} # Pass through AI/ML related keys
+    depends_on: # Worker needs DB and Redis to be healthy, and app's code to be available
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      app:
+        condition: service_started # Worker needs the app's code, but not necessarily for the app to be serving HTTP requests
+
+  # Celery Beat Service
+  # This service runs Celery Beat for scheduling periodic tasks.
+  celery_beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sales_analytics_celery_beat
+    restart: unless-stopped
+    # Command to run Celery Beat, replace 'app.celery_app' with the actual path to your Celery app instance
+    # --pidfile is used to prevent multiple beat instances from running
+    command: celery -A app.celery_app beat --loglevel=info --pidfile=/tmp/celerybeat.pid
+    volumes:
+      - .:/app
+      - /app/static
+      - /app/node_modules
+    environment: # Celery Beat needs access to the same environment variables as the main app
+      FLASK_ENV: ${FLASK_ENV:-development}
+      SECRET_KEY: ${SECRET_KEY:-super-secret-dev-key}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-sales_user}:${POSTGRES_PASSWORD:-sales_password}@db:5432/${POSTGRES_DB:-sales_analytics_db}
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+      # OPENAI_API_KEY: ${OPENAI_API_KEY}
+    depends_on: # Beat needs DB and Redis to be healthy, and app's code to be available
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      app:
+        condition: service_started
+
+# Define Docker Volumes for data persistence across container restarts
+volumes:
+  sales_analytics_db_data: # Volume for PostgreSQL data
+  sales_analytics_redis_data: # Volume for Redis data

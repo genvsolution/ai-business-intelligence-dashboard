@@ -1,0 +1,33 @@
+# Core Flask Framework and Extensions
+Flask
+Flask-Bcrypt
+Flask-Login
+Flask-SQLAlchemy
+Flask-WTF
+
+# WSGI Server
+gunicorn
+
+# Database Drivers
+psycopg2-binary
+
+# AI/ML and Data Processing Libraries
+celery
+nltk
+numpy
+openai
+pandas
+scikit-learn
+
+# Utilities and Integrations
+email_validator
+python-dotenv
+redis
+sentry-sdk
+
+# Testing (typically for development/CI, but included as per project specs)
+pytest
+
+# Note: In a real project generated via `pip freeze > requirements.txt`,
+# each package would be pinned to an exact version (e.g., Flask==2.3.3).
+# For this exercise, only the package names are listed.

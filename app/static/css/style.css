@@ -1,0 +1,35 @@
+/*---------------------------------------------------------------------
+  Table of Contents:
+  
+  1. Root Variables & Bootstrap Overrides
+  2. General Body & Typography
+  3. Layout & Structure (Main Content, Sidebar, Navbar)
+  4. Cards & Panels
+  5. Buttons & Forms
+  6. Tables
+  7. Charts (Chart.js specific)
+  8. Modals & Alerts
+  9. Utility Classes
+  10. Accessibility & Focus States
+  11. Media Queries (Responsiveness)
+  12. Flash Messages
+  13. Authentication Pages
+  14. DataTables Integration
+  15. Kanban Board (Lead Management)
+  16. Admin/Profile Specific
+-----------------------------------------------------------------------*/
+
+/* 1. Root Variables & Bootstrap Overrides */
+:root {
+    /* Primary Colors */
+    --bs-primary: #007bff; /* Bootstrap default blue */
+    --bs-secondary: #6c757d;
+    --bs-success: #28a745;
+    --bs-info: #17a2b8;
+    --bs-warning: #ffc107;
+    --bs-danger: #dc3545;
+    --bs-light: #f8f9fa;
+    --bs-dark: #343a40;
+    --bs-white: #ffffff;
+
+    /* Custom Brand Colors (Google-inspired palette) */

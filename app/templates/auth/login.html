@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-lg p-4 custom-card-login">
+                <div class="card-body">
+                    <h2 class="card-title text-center mb-4">Login to Your Account</h2>
+
+                    {# Display Flask flash messages #}
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    {# Login Form #}
+                    <form method="POST" action="{{ url_for('auth.login') }}" novalidate>
+                        {# CSRF Token for Flask-WTF security #}
+                        {{ form.csrf_token }}
+
+                        <div class="mb-3">
+                            {{ form.email.label(class="form-label") }}
+                            {{ form.email(class="form-control" + (' is-invalid' if form.email.errors else ''), placeholder="Enter your email address", autocomplete="email", required=true, aria-describedby="emailHelp") }}
+                            {% if form.email.errors %}
+                                <div id="emailHelp" class="invalid-feedback">
+                                    {% for error in form.email.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.password.label(class="form-label") }}
+                            {{ form.password(class="form-control" + (' is-invalid' if form.password.errors else ''), placeholder="Enter your password", autocomplete="current-password", required=true, aria-describedby="passwordHelp") }}
+                            {% if form.password.errors %}
+                                <div id="passwordHelp" class="invalid-feedback">
+                                    {% for error in form.password.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="form-check">
+                                {{ form.remember_me(class="form-check-input", id="rememberMeCheckbox") }}
+                                <label class="form-check-label" for="rememberMeCheckbox">
+                                    {{ form.remember_me.label }}
+                                </label>
+                            </div>
+                            <a href="{{ url_for('auth.forgot_password') }}" class="text-decoration-none">Forgot Password?</a>
+                        </div>
+
+                        {# Submit Button #}
+                        {{ form.submit(class="btn btn-primary w-100 py-2 mb-3") }}
+                    </form>
+
+                    <div class="text-center mt-3">
+                        <p class="mb-0">Don't have an account? <a href="{{ url_for('auth.register') }}" class="text-decoration-none">Register here</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Optional: Add custom CSS for the login card if needed, or put in a separate CSS file #}
+<style>
+    .custom-card-login {
+        border-radius: 0.75rem; /* Slightly rounded corners */
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important; /* Stronger shadow */
+    }
+    .card-title {
+        color: var(--bs-primary); /* Use Bootstrap primary color for title */
+    }
+    .form-label {
+        font-weight: 500;
+    }
+</style>
+{% endblock %}

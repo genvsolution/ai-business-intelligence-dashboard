@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}403 Forbidden{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6 text-center py-5">
+            <h1 class="display-1 fw-bold text-danger mb-3">403</h1>
+            <h2 class="display-4 mb-4">Access Denied</h2>
+            <p class="lead mb-4">
+                We're sorry, but you do not have the required permissions to access this page or resource.
+                Your current user role does not grant access to this functionality.
+            </p>
+            <p class="mb-5">
+                Please ensure you are logged in with an account that has the appropriate privileges.
+                If you believe this is an error, please contact your system administrator for assistance.
+            </p>
+            <div class="d-flex flex-column flex-md-row justify-content-center gap-3">
+                <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary btn-lg px-4">
+                    <i class="bi bi-house-door-fill me-2"></i>Go to Dashboard
+                </a>
+                <button onclick="history.back()" class="btn btn-outline-secondary btn-lg px-4">
+                    <i class="bi bi-arrow-left me-2"></i>Go Back
+                </button>
+                {% if current_user.is_authenticated %}
+                <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger btn-lg px-4">
+                    <i class="bi bi-box-arrow-right me-2"></i>Log Out
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,106 @@
+{% macro render_nav(active_page) %}
+    {#
+    Renders a responsive navigation bar for the application.
+
+    This macro provides a consistent navigation experience across all pages,
+    integrating with Bootstrap 5 for responsiveness and Flask-Login for
+    user-specific elements. It highlights the active page and conditionally
+    displays links based on user authentication status and roles.
+
+    Args:
+        active_page (str): A string identifier for the current page (e.g., 'dashboard', 'leads', 'admin', 'login', 'register').
+                           Used to apply the 'active' class to the corresponding navigation item.
+
+    Usage:
+        In your base template or any template where you need the navigation bar:
+        {% from 'macros/nav.html' import render_nav %}
+        {{ render_nav(active_page='dashboard') }}
+
+    Note:
+        Assumes `current_user` from Flask-Login is available in the template context.
+        Assumes standard Flask blueprint route names like 'main.index', 'dashboard.index',
+        'leads.list_leads', 'reports.index', 'admin.users', 'auth.login', 'auth.register',
+        'auth.logout', 'auth.profile'.
+        Role-based access checks (e.g., `current_user.has_role('Admin')`) are illustrative;
+        ensure your `User` model or `current_user` object provides such methods (e.g., a 'roles' attribute
+        that is an iterable, or a dedicated `has_role` method).
+        Requires Bootstrap Icons to be linked in the project for icon display.
+    #}
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('main.index') }}">
+                <i class="bi bi-bar-chart-line-fill me-2"></i> SalesPulse
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    {% if current_user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if active_page == 'dashboard' %}active{% endif %}"
+                               aria-current="{% if active_page == 'dashboard' %}page{% else %}false{% endif %}"
+                               href="{{ url_for('dashboard.index') }}">
+                                <i class="bi bi-speedometer2 me-1"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if active_page == 'leads' %}active{% endif %}"
+                               aria-current="{% if active_page == 'leads' %}page{% else %}false{% endif %}"
+                               href="{{ url_for('leads.list_leads') }}">
+                                <i class="bi bi-person-lines-fill me-1"></i> Leads
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if active_page == 'reports' %}active{% endif %}"
+                               aria-current="{% if active_page == 'reports' %}page{% else %}false{% endif %}"
+                               href="{{ url_for('reports.index') }}">
+                                <i class="bi bi-graph-up me-1"></i> Reports & AI
+                            </a>
+                        </li>
+                        {# Example of role-based navigation item #}
+                        {% if current_user.has_role and current_user.has_role('Admin') %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if active_page == 'admin' %}active{% endif %}"
+                               aria-current="{% if active_page == 'admin' %}page{% else %}false{% endif %}"
+                               href="{{ url_for('admin.users') }}">
+                                <i class="bi bi-gear-fill me-1"></i> Admin
+                            </a>
+                        </li>
+                        {% endif %}
+                    {% endif %}
+                </ul>
+
+                <ul class="navbar-nav ms-auto">
+                    {% if current_user.is_authenticated %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownUser" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle me-1"></i> Welcome, {{ current_user.first_name if current_user.first_name else current_user.username }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdownUser">
+                            <li><a class="dropdown-item" href="{{ url_for('auth.profile') }}"><i class="bi bi-person-vcard me-2"></i> Profile</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}"><i class="bi bi-box-arrow-right me-2"></i> Logout</a></li>
+                        </ul>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if active_page == 'login' %}active{% endif %}"
+                           aria-current="{% if active_page == 'login' %}page{% else %}false{% endif %}"
+                           href="{{ url_for('auth.login') }}">
+                            <i class="bi bi-box-arrow-in-right me-1"></i> Login
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if active_page == 'register' %}active{% endif %}"
+                           aria-current="{% if active_page == 'register' %}page{% else %}false{% endif %}"
+                           href="{{ url_for('auth.register') }}">
+                            <i class="bi bi-person-plus-fill me-1"></i> Register
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+{% endmacro %}

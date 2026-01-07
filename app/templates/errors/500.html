@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Internal Server Error - {{ config['APP_NAME'] }}{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <h1 class="display-1 text-danger">500</h1>
+            <h2 class="mb-4">Internal Server Error</h2>
+            <p class="lead">
+                Oops! Something went wrong on our server. We're actively working to resolve this issue.
+            </p>
+            <p>
+                Please try refreshing the page or come back a little later. If the problem persists, please don't hesitate to contact our support team.
+            </p>
+            <a href="{{ url_for('main.index') }}" class="btn btn-primary btn-lg mt-4">
+                <i class="fas fa-home me-2"></i> Go to Homepage
+            </a>
+            <p class="mt-4 text-muted">
+                Error Reference: <code>{{ request_id if request_id else 'N/A' }}</code>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

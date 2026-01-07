@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 Not Found - Sales Analytics Dashboard</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <!-- Custom CSS for 404 page -->
+    <style>
+        body {
+            background-color: #f8f9fa; /* Light gray background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* Full viewport height */
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+        }
+        .error-container {
+            text-align: center;
+            padding: 40px;
+            border-radius: 8px;
+            background-color: #ffffff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 90%;
+        }
+        .error-code {
+            font-size: 120px;
+            font-weight: 700;
+            color: #dc3545; /* Bootstrap danger color */
+            margin-bottom: 0;
+            line-height: 1;
+        }
+        .error-message {
+            font-size: 32px;
+            font-weight: 500;
+            color: #343a40; /* Bootstrap dark text color */
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+        .error-description {
+            font-size: 18px;
+            color: #6c757d; /* Bootstrap muted text color */
+            margin-bottom: 30px;
+        }
+        .btn-home {
+            background-color: #007bff; /* Bootstrap primary color */
+            border-color: #007bff;
+            color: #ffffff;
+            padding: 12px 25px;
+            font-size: 18px;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+        .btn-home:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <h1 class="error-code">404</h1>
+        <h2 class="error-message">Page Not Found</h2>
+        <p class="error-description">
+            The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.
+            Please check the URL for any typos or return to the homepage.
+        </p>
+        <!-- Assuming a Flask application, the URL for home might be dynamically generated -->
+        <!-- For a standalone HTML, this would be a static path like / or index.html -->
+        <a href="{{ url_for('main.home') }}" class="btn btn-home">Go to Homepage</a>
+    </div>
+
+    <!-- Bootstrap 5 JS (optional, but good practice for interactive components if any were added) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+</body>
+</html>

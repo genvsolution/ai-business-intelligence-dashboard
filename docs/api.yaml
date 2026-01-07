@@ -1,0 +1,37 @@
+openapi: 3.0.0
+info:
+  title: Sales Analytics & CRM API
+  description: |
+    This API provides access to the Sales Analytics & CRM system's functionalities,
+    including user authentication, sales data analytics, lead management, and AI-driven insights.
+    It adheres to RESTful principles and uses session-based authentication for web clients.
+  version: 1.0.0
+servers:
+  - url: http://localhost:5000/api/v1
+    description: Local Development Server
+  - url: https://api.yourdomain.com/api/v1
+    description: Production Server
+tags:
+  - name: Authentication
+    description: User authentication and session management.
+  - name: User Management (Admin)
+    description: Administrative operations for managing users and roles.
+  - name: Analytics
+    description: Sales performance metrics, charts, and data export.
+  - name: Leads
+    description: Management of sales leads, activities, and tasks.
+  - name: AI Insights
+    description: AI-driven reports, forecasts, and recommendations.
+paths:
+  /auth/register:
+    post:
+      tags:
+        - Authentication
+      summary: Register a new user
+      description: Allows a new user to create an account with a unique username and email.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/
